@@ -3,6 +3,12 @@
 #Setting safety for pipelines
 set -E -e -u -o pipefail
 
+# Colors for output
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+NC="\033[0m" # No Color
+
 #i thought it would be cool for it to work like upgrade and full-upgrade so ill do just that here 
 DO_FULL=false 
 if [[ "${1-}" == "--full" ]]; then
@@ -45,4 +51,11 @@ fi
 sudo apt autoremove --purge -y 
 sudo apt clean
 
+# i forgot that you sometimes need to reboot so ill just add info bout it after everythng goes corectly
 
+if [ -f /var/run/reboot-required ]; then
+  echo -e "${YELLOW}Reboot is required to complete updates.${NC}"
+  echo -e "${YELLOW}Run 'sudo reboot' when convenient to finalize system upgrades.${NC}"
+else
+  echo -e "${GREEN}No reboot required. System is up to date and running fine.${NC}"
+fi
