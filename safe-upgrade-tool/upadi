@@ -22,18 +22,18 @@ sudo apt -s full-upgrade | tee /tmp/fullupgrade.log
 # Now we check if sim shows any package removals, ill use -q to keep it clean I used empty echo for readablility.
 if grep -q '^Remv ' /tmp/fullupgrade.log; then
 	echo ""
-	echo "REMOVALS found, packages that would be removed:"
+	echo -e "${YELLOW}REMOVALS found, packages that would be removed:${NC}"
 	grep -E '^Remv ' /tmp/fullupgrade.log
 	echo ""
 	if $DO_FULL; then
-    echo "Used --full, but removals were detected, skiping for safety."
+    echo -e "${RED}Used --full, but removals were detected, skiping for safety.${NC}"
   else
     echo "Run with --full to apply full-upgrade when there are NO removals."
   fi
 else 
-	echo "No removals decected"
+	echo -e "${GREEN}No removals detected.${NC}"
 	if $DO_FULL; then
-	echo "Applying full-upgrade"
+	echo -e "${GREEN}Applying full-upgrade.${NC}"
 	sudo apt full-upgrade -y
 	else
     echo "Not applying full-upgrade by default. Use --full to allow it."
