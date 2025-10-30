@@ -1,0 +1,48 @@
+#!/bin/bash
+
+#Setting safety for pipelines
+set -E -e -u -o pipefail
+
+#i thought it would be cool for it to work like upgrade and full-upgrade so ill do just that here 
+DO_FULL=false 
+if [[ "${1-}" == "--full" ]]; then
+	DO_FULL=true
+elif [[ "${1-}" == "-h" || "${1-}" == "--help" ]]; then
+  echo "Usage: $0 [--full]"
+  echo "  --full   apply 'apt full-upgrade' ONLY if the simulation shows NO removals"
+  exit 0
+fi 
+
+#simple update and safe upgarde command
+sudo apt update && sudo apt upgrade -y
+
+#Making simulation of full-upgrade to see if everything works and generating a log of the results
+sudo apt -s full-upgrade | tee /tmp/fullupgrade.log
+
+# Now we check if sim shows any package removals, ill use -q to keep it clean I used empty echo for readablility.
+if grep -q '^Remv ' /tmp/fullupgrade.log; then
+	echo ""
+	echo "REMOVALS found, packages that would be removed:"
+	grep -E '^Remv ' /tmp/fullupgrade.log
+	echo ""
+	if $DO_FULL; then
+    echo "Used --full, but removals were detected, skiping for safety."
+  else
+    echo "Run with --full to apply full-upgrade when there are NO removals."
+  fi
+else 
+	echo "No removals decected"
+	if $DO_FULL; then
+	echo "Applying full-upgrade"
+	sudo apt full-upgrade -y
+	else
+    echo "Not applying full-upgrade by default. Use --full to allow it."
+	fi
+fi
+
+#i did research that is good to do a cleanup after update so ill add it here i will use "autoremove" to remove unused packages and purge flag to remove unsued config files finaly illuse clean to delete packages cache
+
+sudo apt autoremove --purge -y 
+sudo apt clean
+
+
